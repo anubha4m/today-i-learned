@@ -13,7 +13,9 @@ import {
   Loader2,
   Check,
   X,
+  Bookmark,
 } from "lucide-react";
+import FeedEntryCard from "@/components/FeedEntryCard";
 
 interface User {
   id: string;
@@ -49,9 +51,13 @@ interface Entry {
     name: string | null;
     image: string | null;
   };
+  isLiked: boolean;
+  isSaved: boolean;
+  likesCount: number;
+  commentsCount: number;
 }
 
-type Tab = "feed" | "following" | "followers" | "requests" | "search";
+type Tab = "feed" | "following" | "followers" | "requests" | "saved" | "search";
 
 export default function FriendsPage() {
   const { data: session, status } = useSession();
@@ -62,6 +68,7 @@ export default function FriendsPage() {
   const [following, setFollowing] = useState<Following[]>([]);
   const [followers, setFollowers] = useState<Follower[]>([]);
   const [feed, setFeed] = useState<Entry[]>([]);
+  const [savedEntries, setSavedEntries] = useState<Entry[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<User[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -85,6 +92,16 @@ export default function FriendsPage() {
         const res = await fetch("/api/feed?days=7");
         const data = await res.json();
         setFeed(data);
+      } else if (activeTab === "saved") {
+        const res = await fetch("/api/saved");
+        const data = await res.json();
+        setSavedEntries(data.map((s: { entry: Entry }) => ({
+          ...s.entry,
+          isLiked: false,
+          isSaved: true,
+          likesCount: s.entry.likesCount || 0,
+          commentsCount: s.entry.commentsCount || 0,
+        })));
       } else if (activeTab === "requests") {
         const res = await fetch("/api/follow?type=requests");
         const data = await res.json();
@@ -152,7 +169,6 @@ export default function FriendsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId }),
       });
-      // Remove from search results or mark as followed
       setSearchResults((prev) => prev.filter((u) => u.id !== userId));
     } catch (error) {
       console.error("Error following:", error);
@@ -169,6 +185,7 @@ export default function FriendsPage() {
 
   const tabs = [
     { id: "feed" as Tab, label: "Feed", icon: Users },
+    { id: "saved" as Tab, label: "Saved", icon: Bookmark },
     { id: "following" as Tab, label: "Following", icon: UserCheck },
     { id: "followers" as Tab, label: "Followers", icon: Users },
     { id: "requests" as Tab, label: "Requests", icon: Bell, badge: requests.length },
@@ -178,29 +195,27 @@ export default function FriendsPage() {
   return (
     <div className="animate-fadeIn">
       {/* Header */}
-      <div className="flex items-center gap-3 mb-8">
+      <div className="flex items-center gap-3 mb-6">
         <Users className="text-amber-400" size={28} />
-        <h1 className="text-3xl font-bold text-zinc-100 dark:text-zinc-100 light:text-zinc-900">
-          Friends
-        </h1>
+        <h1 className="text-2xl md:text-3xl font-bold theme-text">Friends</h1>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+      <div className="flex gap-2 mb-6 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0">
         {tabs.map(({ id, label, icon: Icon, badge }) => (
           <button
             key={id}
             onClick={() => setActiveTab(id)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl whitespace-nowrap transition-colors ${
+            className={`flex items-center gap-2 px-3 md:px-4 py-2 rounded-xl whitespace-nowrap transition-colors text-sm ${
               activeTab === id
                 ? "bg-amber-500/20 text-amber-400"
-                : "bg-zinc-800 dark:bg-zinc-800 light:bg-zinc-100 text-zinc-400 hover:text-zinc-200 dark:hover:text-zinc-200 light:hover:text-zinc-800"
+                : "theme-bg-tertiary theme-text-muted hover:theme-text"
             }`}
           >
             <Icon size={18} />
-            {label}
+            <span className="hidden sm:inline">{label}</span>
             {badge !== undefined && badge > 0 && (
-              <span className="ml-1 px-2 py-0.5 text-xs bg-amber-500 text-zinc-900 rounded-full">
+              <span className="px-1.5 py-0.5 text-xs bg-amber-500 text-zinc-900 rounded-full">
                 {badge}
               </span>
             )}
@@ -219,53 +234,31 @@ export default function FriendsPage() {
           {activeTab === "feed" && (
             <div className="space-y-4">
               {feed.length === 0 ? (
-                <div className="text-center py-12 text-zinc-500">
+                <div className="text-center py-12 theme-text-muted">
                   <Users size={48} className="mx-auto mb-4 opacity-50" />
                   <p>No recent updates from friends.</p>
                   <p className="text-sm mt-1">Follow people to see their learnings here!</p>
                 </div>
               ) : (
                 feed.map((entry) => (
-                  <div
-                    key={entry.id}
-                    className="p-4 bg-zinc-800/50 dark:bg-zinc-800/50 light:bg-white border border-zinc-700/50 dark:border-zinc-700/50 light:border-zinc-200 rounded-xl"
-                  >
-                    <div className="flex items-center gap-3 mb-3">
-                      <Link href={`/users/${entry.user.id}`}>
-                        {entry.user.image ? (
-                          <img
-                            src={entry.user.image}
-                            alt={entry.user.name || "User"}
-                            className="w-10 h-10 rounded-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-zinc-900 font-semibold">
-                            {entry.user.name?.charAt(0).toUpperCase() || "U"}
-                          </div>
-                        )}
-                      </Link>
-                      <div>
-                        <Link
-                          href={`/users/${entry.user.id}`}
-                          className="font-medium text-zinc-200 dark:text-zinc-200 light:text-zinc-800 hover:text-amber-400"
-                        >
-                          {entry.user.name}
-                        </Link>
-                        <p className="text-xs text-zinc-500">
-                          {new Date(entry.createdAt).toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                            hour: "numeric",
-                            minute: "2-digit",
-                          })}
-                        </p>
-                      </div>
-                    </div>
-                    <div
-                      className="prose prose-invert dark:prose-invert light:prose max-w-none text-sm"
-                      dangerouslySetInnerHTML={{ __html: entry.content }}
-                    />
-                  </div>
+                  <FeedEntryCard key={entry.id} entry={entry} />
+                ))
+              )}
+            </div>
+          )}
+
+          {/* Saved Tab */}
+          {activeTab === "saved" && (
+            <div className="space-y-4">
+              {savedEntries.length === 0 ? (
+                <div className="text-center py-12 theme-text-muted">
+                  <Bookmark size={48} className="mx-auto mb-4 opacity-50" />
+                  <p>No saved entries yet.</p>
+                  <p className="text-sm mt-1">Save entries from your feed to read later!</p>
+                </div>
+              ) : (
+                savedEntries.map((entry) => (
+                  <FeedEntryCard key={entry.id} entry={entry} />
                 ))
               )}
             </div>
@@ -275,7 +268,7 @@ export default function FriendsPage() {
           {activeTab === "following" && (
             <div className="space-y-3">
               {following.length === 0 ? (
-                <div className="text-center py-12 text-zinc-500">
+                <div className="text-center py-12 theme-text-muted">
                   <UserPlus size={48} className="mx-auto mb-4 opacity-50" />
                   <p>You&apos;re not following anyone yet.</p>
                 </div>
@@ -291,7 +284,7 @@ export default function FriendsPage() {
           {activeTab === "followers" && (
             <div className="space-y-3">
               {followers.length === 0 ? (
-                <div className="text-center py-12 text-zinc-500">
+                <div className="text-center py-12 theme-text-muted">
                   <Users size={48} className="mx-auto mb-4 opacity-50" />
                   <p>No followers yet.</p>
                 </div>
@@ -307,7 +300,7 @@ export default function FriendsPage() {
           {activeTab === "requests" && (
             <div className="space-y-3">
               {requests.length === 0 ? (
-                <div className="text-center py-12 text-zinc-500">
+                <div className="text-center py-12 theme-text-muted">
                   <Bell size={48} className="mx-auto mb-4 opacity-50" />
                   <p>No pending follow requests.</p>
                 </div>
@@ -315,28 +308,28 @@ export default function FriendsPage() {
                 requests.map((request) => (
                   <div
                     key={request.id}
-                    className="flex items-center justify-between p-4 bg-zinc-800/50 dark:bg-zinc-800/50 light:bg-white border border-zinc-700/50 dark:border-zinc-700/50 light:border-zinc-200 rounded-xl"
+                    className="flex items-center justify-between p-4 theme-card border theme-border rounded-xl"
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
                       {request.follower.image ? (
                         <img
                           src={request.follower.image}
                           alt={request.follower.name || "User"}
-                          className="w-10 h-10 rounded-full object-cover"
+                          className="w-10 h-10 rounded-full object-cover flex-shrink-0"
                         />
                       ) : (
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-zinc-900 font-semibold">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-zinc-900 font-semibold flex-shrink-0">
                           {request.follower.name?.charAt(0).toUpperCase() || "U"}
                         </div>
                       )}
-                      <div>
-                        <p className="font-medium text-zinc-200 dark:text-zinc-200 light:text-zinc-800">
+                      <div className="min-w-0">
+                        <p className="font-medium theme-text truncate">
                           {request.follower.name}
                         </p>
-                        <p className="text-xs text-zinc-500">{request.follower.email}</p>
+                        <p className="text-xs theme-text-muted truncate">{request.follower.email}</p>
                       </div>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-shrink-0">
                       <button
                         onClick={() => handleAcceptRequest(request.id)}
                         className="p-2 bg-emerald-500/20 text-emerald-400 rounded-lg hover:bg-emerald-500/30 transition-colors"
@@ -366,12 +359,12 @@ export default function FriendsPage() {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                   placeholder="Search by name or email..."
-                  className="flex-1 px-4 py-3 bg-zinc-800 dark:bg-zinc-800 light:bg-white border border-zinc-700 dark:border-zinc-700 light:border-zinc-200 rounded-xl text-zinc-100 dark:text-zinc-100 light:text-zinc-900 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50"
+                  className="flex-1 px-4 py-3 theme-input rounded-xl"
                 />
                 <button
                   onClick={handleSearch}
                   disabled={isSearching}
-                  className="px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-zinc-900 font-medium rounded-xl hover:from-amber-400 hover:to-orange-400 transition-all disabled:opacity-50"
+                  className="px-4 md:px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-zinc-900 font-medium rounded-xl hover:from-amber-400 hover:to-orange-400 transition-all disabled:opacity-50"
                 >
                   {isSearching ? <Loader2 className="animate-spin" size={20} /> : <Search size={20} />}
                 </button>
@@ -381,33 +374,31 @@ export default function FriendsPage() {
                 {searchResults.map((user) => (
                   <div
                     key={user.id}
-                    className="flex items-center justify-between p-4 bg-zinc-800/50 dark:bg-zinc-800/50 light:bg-white border border-zinc-700/50 dark:border-zinc-700/50 light:border-zinc-200 rounded-xl"
+                    className="flex items-center justify-between p-4 theme-card border theme-border rounded-xl"
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
                       {user.image ? (
                         <img
                           src={user.image}
                           alt={user.name || "User"}
-                          className="w-10 h-10 rounded-full object-cover"
+                          className="w-10 h-10 rounded-full object-cover flex-shrink-0"
                         />
                       ) : (
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-zinc-900 font-semibold">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-zinc-900 font-semibold flex-shrink-0">
                           {user.name?.charAt(0).toUpperCase() || "U"}
                         </div>
                       )}
-                      <div>
-                        <p className="font-medium text-zinc-200 dark:text-zinc-200 light:text-zinc-800">
-                          {user.name}
-                        </p>
-                        <p className="text-xs text-zinc-500">{user.bio || user.email}</p>
+                      <div className="min-w-0">
+                        <p className="font-medium theme-text truncate">{user.name}</p>
+                        <p className="text-xs theme-text-muted truncate">{user.bio || user.email}</p>
                       </div>
                     </div>
                     <button
                       onClick={() => handleFollow(user.id)}
-                      className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-zinc-900 font-medium rounded-xl hover:from-amber-400 hover:to-orange-400 transition-all"
+                      className="flex items-center gap-2 px-3 md:px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-zinc-900 font-medium rounded-xl hover:from-amber-400 hover:to-orange-400 transition-all flex-shrink-0"
                     >
                       <UserPlus size={16} />
-                      Follow
+                      <span className="hidden sm:inline">Follow</span>
                     </button>
                   </div>
                 ))}
@@ -424,26 +415,23 @@ function UserCard({ user }: { user: User }) {
   return (
     <Link
       href={`/users/${user.id}`}
-      className="flex items-center gap-3 p-4 bg-zinc-800/50 dark:bg-zinc-800/50 light:bg-white border border-zinc-700/50 dark:border-zinc-700/50 light:border-zinc-200 rounded-xl hover:border-amber-500/50 transition-colors"
+      className="flex items-center gap-3 p-4 theme-card border theme-border rounded-xl hover:border-amber-500/50 transition-colors"
     >
       {user.image ? (
         <img
           src={user.image}
           alt={user.name || "User"}
-          className="w-10 h-10 rounded-full object-cover"
+          className="w-10 h-10 rounded-full object-cover flex-shrink-0"
         />
       ) : (
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-zinc-900 font-semibold">
+        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-zinc-900 font-semibold flex-shrink-0">
           {user.name?.charAt(0).toUpperCase() || "U"}
         </div>
       )}
-      <div>
-        <p className="font-medium text-zinc-200 dark:text-zinc-200 light:text-zinc-800">
-          {user.name}
-        </p>
-        <p className="text-xs text-zinc-500">{user.bio || user.email}</p>
+      <div className="min-w-0">
+        <p className="font-medium theme-text truncate">{user.name}</p>
+        <p className="text-xs theme-text-muted truncate">{user.bio || user.email}</p>
       </div>
     </Link>
   );
 }
-

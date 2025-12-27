@@ -24,27 +24,31 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const stored = localStorage.getItem("theme") as Theme | null;
     if (stored) {
       setThemeState(stored);
+      applyTheme(stored);
     }
   }, []);
 
+  const applyTheme = (newTheme: Theme) => {
+    const html = document.documentElement;
+    html.classList.remove("dark", "light");
+    html.classList.add(newTheme);
+  };
+
   useEffect(() => {
     if (!mounted) return;
-    
-    // Apply theme to document
-    document.documentElement.classList.remove("dark", "light");
-    document.documentElement.classList.add(theme);
+    applyTheme(theme);
     localStorage.setItem("theme", theme);
   }, [theme, mounted]);
 
   // Sync with user's saved theme preference when session loads
   useEffect(() => {
     if (session?.user?.id && mounted) {
-      // Fetch user's theme preference
       fetch("/api/users/me")
         .then((res) => res.json())
         .then((data) => {
           if (data.theme && data.theme !== theme) {
             setThemeState(data.theme);
+            applyTheme(data.theme);
           }
         })
         .catch(() => {
@@ -55,6 +59,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
+    applyTheme(newTheme);
     // Save to backend if logged in
     if (session?.user?.id) {
       fetch("/api/users/me", {
@@ -71,14 +76,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setTheme(theme === "dark" ? "light" : "dark");
   };
 
-  // Prevent flash of wrong theme
-  if (!mounted) {
-    return null;
-  }
-
+  // Show children immediately but with default theme to prevent flash
   return (
     <ThemeContext.Provider value={{ theme, setTheme, toggleTheme }}>
-      {children}
+      <div style={{ visibility: mounted ? "visible" : "hidden" }}>
+        {children}
+      </div>
     </ThemeContext.Provider>
   );
 }
@@ -90,4 +93,3 @@ export function useTheme() {
   }
   return context;
 }
-

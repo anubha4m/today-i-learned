@@ -49,6 +49,20 @@ export async function GET(request: NextRequest) {
           image: true,
         },
       },
+      _count: {
+        select: {
+          likes: true,
+          comments: true,
+        },
+      },
+      likes: {
+        where: { userId: session.user.id },
+        select: { id: true },
+      },
+      savedBy: {
+        where: { userId: session.user.id },
+        select: { id: true },
+      },
     },
     orderBy: {
       createdAt: "desc",
@@ -56,6 +70,17 @@ export async function GET(request: NextRequest) {
     take: 50,
   });
 
-  return NextResponse.json(entries);
-}
+  // Transform to include isLiked and isSaved flags
+  const entriesWithStatus = entries.map((entry) => ({
+    ...entry,
+    isLiked: entry.likes.length > 0,
+    isSaved: entry.savedBy.length > 0,
+    likesCount: entry._count.likes,
+    commentsCount: entry._count.comments,
+    likes: undefined,
+    savedBy: undefined,
+    _count: undefined,
+  }));
 
+  return NextResponse.json(entriesWithStatus);
+}

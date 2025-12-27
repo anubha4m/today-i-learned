@@ -1,12 +1,13 @@
 "use client";
 
+import { Suspense } from "react";
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Sparkles, Mail, Lock, Loader2, AlertCircle } from "lucide-react";
 
-export default function SignInPage() {
+function SignInForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/";
@@ -47,17 +48,17 @@ export default function SignInPage() {
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center animate-fadeIn">
+    <div className="min-h-[80vh] flex items-center justify-center animate-fadeIn px-4">
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 mb-4">
             <Sparkles className="text-amber-400" size={32} />
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-amber-200 via-amber-400 to-orange-500 bg-clip-text text-transparent">
+            <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-amber-200 via-amber-400 to-orange-500 bg-clip-text text-transparent">
               Welcome Back
             </h1>
           </div>
-          <p className="text-zinc-400">Sign in to continue your learning journey</p>
+          <p className="theme-text-muted">Sign in to continue your learning journey</p>
         </div>
 
         {/* Error Message */}
@@ -69,14 +70,14 @@ export default function SignInPage() {
         )}
 
         {/* Sign In Form */}
-        <div className="bg-zinc-800/50 border border-zinc-700/50 rounded-2xl p-8">
+        <div className="theme-card border theme-border rounded-2xl p-6 md:p-8">
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-zinc-300 mb-2">
+              <label htmlFor="email" className="block text-sm font-medium theme-text-secondary mb-2">
                 Email
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" size={20} />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 theme-text-muted" size={20} />
                 <input
                   id="email"
                   type="email"
@@ -84,17 +85,17 @@ export default function SignInPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
                   required
-                  className="w-full pl-11 pr-4 py-3 bg-zinc-900/50 border border-zinc-700 rounded-xl text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all"
+                  className="w-full pl-11 pr-4 py-3 theme-input rounded-xl"
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-zinc-300 mb-2">
+              <label htmlFor="password" className="block text-sm font-medium theme-text-secondary mb-2">
                 Password
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" size={20} />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 theme-text-muted" size={20} />
                 <input
                   id="password"
                   type="password"
@@ -102,7 +103,7 @@ export default function SignInPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   required
-                  className="w-full pl-11 pr-4 py-3 bg-zinc-900/50 border border-zinc-700 rounded-xl text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all"
+                  className="w-full pl-11 pr-4 py-3 theme-input rounded-xl"
                 />
               </div>
             </div>
@@ -125,16 +126,16 @@ export default function SignInPage() {
 
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-zinc-700"></div>
+              <div className="w-full border-t theme-border"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-zinc-800/50 text-zinc-500">or continue with</span>
+              <span className="px-4 theme-card theme-text-muted">or continue with</span>
             </div>
           </div>
 
           <button
             onClick={handleGoogleSignIn}
-            className="w-full py-3 bg-zinc-700 hover:bg-zinc-600 text-zinc-100 font-medium rounded-xl transition-all flex items-center justify-center gap-3"
+            className="w-full py-3 theme-bg-tertiary hover:theme-bg-secondary theme-text font-medium rounded-xl transition-all flex items-center justify-center gap-3 border theme-border"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path
@@ -157,7 +158,7 @@ export default function SignInPage() {
             Continue with Google
           </button>
 
-          <p className="mt-6 text-center text-zinc-400">
+          <p className="mt-6 text-center theme-text-muted">
             Don&apos;t have an account?{" "}
             <Link href="/auth/signup" className="text-amber-400 hover:text-amber-300 font-medium">
               Sign up
@@ -169,3 +170,14 @@ export default function SignInPage() {
   );
 }
 
+export default function SignInPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-[80vh] flex items-center justify-center">
+        <Loader2 className="animate-spin text-amber-400" size={40} />
+      </div>
+    }>
+      <SignInForm />
+    </Suspense>
+  );
+}

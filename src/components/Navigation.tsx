@@ -22,41 +22,68 @@ export default function Navigation() {
   }
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-zinc-900/95 dark:bg-zinc-900/95 light:bg-white/95 backdrop-blur-lg border-t border-zinc-800 dark:border-zinc-800 light:border-zinc-200 md:relative md:border-t-0 md:border-b md:bg-transparent z-40">
-      <div className="max-w-4xl mx-auto px-4">
-        <div className="flex justify-around md:justify-between items-center py-2 md:py-4">
-          {/* Navigation Links */}
-          <div className="flex justify-around md:justify-start md:gap-6 flex-1 md:flex-initial">
-            {links.map(({ href, label, icon: Icon }) => {
-              const isActive = pathname === href;
-              return (
-                <Link
-                  key={href}
-                  href={href}
-                  className={`flex flex-col md:flex-row items-center gap-1 md:gap-2 px-3 md:px-4 py-2 rounded-xl transition-all ${
-                    isActive
-                      ? "text-amber-400 bg-amber-500/10"
-                      : "text-zinc-400 hover:text-zinc-200 dark:hover:text-zinc-200 light:hover:text-zinc-700 hover:bg-zinc-800 dark:hover:bg-zinc-800 light:hover:bg-zinc-100"
-                  }`}
-                >
-                  <Icon size={20} />
-                  <span className="text-xs md:text-sm font-medium">{label}</span>
-                </Link>
-              );
-            })}
-          </div>
-
-          {/* User Menu - Desktop only in nav, mobile has bottom position */}
-          <div className="hidden md:block">
-            <UserMenu />
-          </div>
+    <>
+      {/* Mobile Header with User Menu */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50 px-4 py-3 theme-bg border-b theme-border backdrop-blur-lg bg-opacity-95">
+        <div className="flex items-center justify-between">
+          <h1 className="text-lg font-semibold theme-accent">TIL</h1>
+          <UserMenu />
         </div>
       </div>
 
-      {/* Mobile User Menu - Fixed position in top right */}
-      <div className="md:hidden fixed top-4 right-4 z-50">
-        <UserMenu />
-      </div>
-    </nav>
+      {/* Desktop Navigation */}
+      <nav className="hidden md:block relative border-b theme-border">
+        <div className="max-w-4xl mx-auto px-4">
+          <div className="flex justify-between items-center py-4">
+            {/* Navigation Links */}
+            <div className="flex gap-6">
+              {links.map(({ href, label, icon: Icon }) => {
+                const isActive = pathname === href;
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all ${
+                      isActive
+                        ? "text-amber-400 bg-amber-500/10"
+                        : "theme-text-secondary hover:theme-text hover:bg-opacity-10 hover:bg-amber-500"
+                    }`}
+                  >
+                    <Icon size={20} />
+                    <span className="text-sm font-medium">{label}</span>
+                  </Link>
+                );
+              })}
+            </div>
+
+            {/* User Menu */}
+            <UserMenu />
+          </div>
+        </div>
+      </nav>
+
+      {/* Mobile Bottom Navigation */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 theme-bg border-t theme-border backdrop-blur-lg bg-opacity-95 safe-bottom">
+        <div className="flex justify-around items-center py-2 px-2">
+          {links.map(({ href, label, icon: Icon }) => {
+            const isActive = pathname === href;
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={`flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all min-w-0 ${
+                  isActive
+                    ? "text-amber-400 bg-amber-500/10"
+                    : "theme-text-muted"
+                }`}
+              >
+                <Icon size={20} />
+                <span className="text-[10px] font-medium truncate">{label}</span>
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
+    </>
   );
 }

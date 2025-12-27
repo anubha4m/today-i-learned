@@ -60,12 +60,15 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  accounts  Account[]
-  sessions  Session[]
-  entries   Entry[]
-  bookmarks Bookmark[]
-  followers Follow[]   @relation("following") // Users who follow this user
-  following Follow[]   @relation("follower")  // Users this user follows
+  accounts     Account[]
+  sessions     Session[]
+  entries      Entry[]
+  bookmarks    Bookmark[]
+  followers    Follow[]      @relation("following") // Users who follow this user
+  following    Follow[]      @relation("follower")  // Users this user follows
+  likes        Like[]        // Entries this user has liked
+  comments     Comment[]     // Comments this user has made
+  savedEntries SavedEntry[]  // Entries this user has saved/bookmarked
 }
 
 // Follow relationship for friends/followers
@@ -91,6 +94,49 @@ model Entry {
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+
+  likes        Like[]
+  comments     Comment[]
+  savedBy      SavedEntry[]
+}
+
+// Like on an entry
+model Like {
+  id        String   @id @default(cuid())
+  userId    String
+  entryId   String
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  entry Entry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, entryId])
+}
+
+// Comment on an entry
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  userId    String
+  entryId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  entry Entry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+}
+
+// Saved/Bookmarked entry (for reading later)
+model SavedEntry {
+  id        String   @id @default(cuid())
+  userId    String
+  entryId   String
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  entry Entry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, entryId])
 }
 
 // Bookmark with user ownership

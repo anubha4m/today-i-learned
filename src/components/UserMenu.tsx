@@ -27,7 +27,7 @@ export default function UserMenu() {
     return (
       <Link
         href="/auth/signin"
-        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-zinc-900 font-medium rounded-xl transition-all"
+        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-zinc-900 font-medium rounded-xl transition-all text-sm"
       >
         Sign In
       </Link>
@@ -40,7 +40,7 @@ export default function UserMenu() {
     <div className="relative" ref={menuRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 p-1.5 rounded-xl hover:bg-zinc-800 dark:hover:bg-zinc-800 light:hover:bg-zinc-200 transition-colors"
+        className="flex items-center gap-2 p-1.5 rounded-xl theme-btn-secondary transition-colors"
       >
         {session.user.image ? (
           <img
@@ -55,18 +55,18 @@ export default function UserMenu() {
         )}
         <ChevronDown
           size={16}
-          className={`text-zinc-400 transition-transform ${isOpen ? "rotate-180" : ""}`}
+          className={`theme-text-muted transition-transform ${isOpen ? "rotate-180" : ""}`}
         />
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-56 bg-zinc-800 dark:bg-zinc-800 light:bg-white border border-zinc-700 dark:border-zinc-700 light:border-zinc-200 rounded-xl shadow-xl overflow-hidden z-50 animate-fadeIn">
+        <div className="absolute right-0 mt-2 w-56 theme-card rounded-xl shadow-xl overflow-hidden z-50 animate-fadeIn border theme-border">
           {/* User Info */}
-          <div className="px-4 py-3 border-b border-zinc-700 dark:border-zinc-700 light:border-zinc-200">
-            <p className="text-sm font-medium text-zinc-100 dark:text-zinc-100 light:text-zinc-900 truncate">
+          <div className="px-4 py-3 border-b theme-border">
+            <p className="text-sm font-medium theme-text truncate">
               {session.user.name}
             </p>
-            <p className="text-xs text-zinc-400 dark:text-zinc-400 light:text-zinc-500 truncate">
+            <p className="text-xs theme-text-muted truncate">
               {session.user.email}
             </p>
           </div>
@@ -76,7 +76,7 @@ export default function UserMenu() {
             <Link
               href="/profile"
               onClick={() => setIsOpen(false)}
-              className="flex items-center gap-3 px-4 py-2 text-zinc-300 dark:text-zinc-300 light:text-zinc-700 hover:bg-zinc-700 dark:hover:bg-zinc-700 light:hover:bg-zinc-100 transition-colors"
+              className="flex items-center gap-3 px-4 py-2 theme-text-secondary hover:theme-bg-secondary transition-colors"
             >
               <User size={18} />
               <span>Profile</span>
@@ -85,7 +85,7 @@ export default function UserMenu() {
             <Link
               href="/settings"
               onClick={() => setIsOpen(false)}
-              className="flex items-center gap-3 px-4 py-2 text-zinc-300 dark:text-zinc-300 light:text-zinc-700 hover:bg-zinc-700 dark:hover:bg-zinc-700 light:hover:bg-zinc-100 transition-colors"
+              className="flex items-center gap-3 px-4 py-2 theme-text-secondary hover:theme-bg-secondary transition-colors"
             >
               <Settings size={18} />
               <span>Settings</span>
@@ -95,7 +95,7 @@ export default function UserMenu() {
               onClick={() => {
                 toggleTheme();
               }}
-              className="flex items-center gap-3 px-4 py-2 w-full text-left text-zinc-300 dark:text-zinc-300 light:text-zinc-700 hover:bg-zinc-700 dark:hover:bg-zinc-700 light:hover:bg-zinc-100 transition-colors"
+              className="flex items-center gap-3 px-4 py-2 w-full text-left theme-text-secondary hover:theme-bg-secondary transition-colors"
             >
               {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
               <span>{theme === "dark" ? "Light Mode" : "Dark Mode"}</span>
@@ -103,13 +103,13 @@ export default function UserMenu() {
           </div>
 
           {/* Sign Out */}
-          <div className="border-t border-zinc-700 dark:border-zinc-700 light:border-zinc-200 py-2">
+          <div className="border-t theme-border py-2">
             <button
               onClick={() => {
                 setIsOpen(false);
                 signOut({ callbackUrl: "/auth/signin" });
               }}
-              className="flex items-center gap-3 px-4 py-2 w-full text-left text-red-400 hover:bg-zinc-700 dark:hover:bg-zinc-700 light:hover:bg-zinc-100 transition-colors"
+              className="flex items-center gap-3 px-4 py-2 w-full text-left text-red-400 hover:theme-bg-secondary transition-colors"
             >
               <LogOut size={18} />
               <span>Sign Out</span>
@@ -120,4 +120,3 @@ export default function UserMenu() {
     </div>
   );
 }
-
