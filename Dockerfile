@@ -43,11 +43,9 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Copy prisma files for migrations
-COPY --from=builder /app/prisma ./prisma
+# Copy Prisma client (already generated)
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
-COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
 
 USER nextjs
 
@@ -56,5 +54,5 @@ EXPOSE 8080
 ENV PORT=8080
 ENV HOSTNAME="0.0.0.0"
 
-# Start script - run migrations then start server
-CMD ["sh", "-c", "npx prisma migrate deploy && node server.js"]
+# Just start the server - we'll run migrations separately
+CMD ["node", "server.js"]
