@@ -48,3 +48,4 @@ next-env.d.ts
 
 # Goal/planning files
 goal*.md
+context.md

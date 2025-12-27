@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Outfit, Fira_Code } from "next/font/google";
 import "./globals.css";
 import Navigation from "@/components/Navigation";
+import Providers from "@/components/Providers";
 
 const outfit = Outfit({
   variable: "--font-geist-sans",
@@ -26,14 +27,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <body
         className={`${outfit.variable} ${firaCode.variable} antialiased`}
       >
-        <div className="min-h-screen pb-20 md:pb-0">
-          <Navigation />
-          <main className="max-w-4xl mx-auto px-4 py-8">{children}</main>
-        </div>
+        <Providers>
+          <div className="min-h-screen pb-20 md:pb-0">
+            <Navigation />
+            <main className="max-w-4xl mx-auto px-4 py-8">{children}</main>
+          </div>
+        </Providers>
       </body>
     </html>
   );
