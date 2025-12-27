@@ -9,8 +9,9 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm ci
 
-# Copy prisma schema and generate client
+# Copy prisma schema and generate client (using dummy URL for generation only)
 COPY prisma ./prisma/
+ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy"
 RUN npx prisma generate
 
 # Rebuild the source code only when needed
@@ -20,7 +21,8 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Generate Prisma client in builder too
+# Generate Prisma client (using dummy URL for generation only)
+ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy"
 RUN npx prisma generate
 
 # Build the application
@@ -54,5 +56,5 @@ EXPOSE 8080
 ENV PORT=8080
 ENV HOSTNAME="0.0.0.0"
 
-# Just start the server - we'll run migrations separately
+# Just start the server - migrations are already done
 CMD ["node", "server.js"]
