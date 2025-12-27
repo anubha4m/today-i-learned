@@ -1,36 +1,69 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Today I Learned (TIL)
+
+A beautiful journal app for tracking your daily learning adventures. Capture insights, save bookmarks to learning resources, and review your progress over time.
+
+## Features
+
+- **Rich Text Editor**: Write your learnings with formatting support (bold, italic, headings, lists, code blocks, quotes)
+- **Review Before Saving**: Preview and edit your entries before committing them
+- **History View**: Browse your entries from the last 7 days with chronological sorting
+- **Bookmarks**: Save URLs to learning resources with notes about what you learned
+- **Search**: Find past bookmarks by URL, title, or notes
+- **Dark Mode**: Beautiful dark theme with amber accents
+
+## Tech Stack
+
+- **Framework**: Next.js 14 (App Router)
+- **Database**: SQLite with Prisma ORM
+- **Rich Text Editor**: Tiptap
+- **Styling**: Tailwind CSS
+- **Icons**: Lucide React
 
 ## Getting Started
 
-First, run the development server:
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+2. Set up the database:
+   ```bash
+   npx prisma migrate dev
+   ```
+
+3. Run the development server:
+   ```bash
+   npm run dev
+   ```
+
+4. Open [http://localhost:3000](http://localhost:3000) in your browser
+
+## Project Structure
+
+```
+src/
+├── app/
+│   ├── layout.tsx          # Root layout with navigation
+│   ├── page.tsx            # Main TIL entry page
+│   ├── history/
+│   │   └── page.tsx        # History view
+│   ├── bookmarks/
+│   │   └── page.tsx        # Bookmarks view
+│   └── api/
+│       ├── entries/
+│       │   └── route.ts    # CRUD for entries
+│       └── bookmarks/
+│           └── route.ts    # CRUD for bookmarks
+├── components/
+│   ├── Editor.tsx          # Tiptap editor component
+│   ├── EntryCard.tsx       # Entry display card
+│   ├── BookmarkCard.tsx    # Bookmark display card
+│   ├── Navigation.tsx      # Tab navigation
+│   └── ReviewModal.tsx     # Pre-save review modal
+└── lib/
+    └── prisma.ts           # Prisma client instance
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## License
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT
